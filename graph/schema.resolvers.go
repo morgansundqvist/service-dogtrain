@@ -6,24 +6,58 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/morgansundqvist/service-dogtrain/database"
 	"github.com/morgansundqvist/service-dogtrain/graph/model"
 )
 
 // CreateDog is the resolver for the createDog field.
 func (r *mutationResolver) CreateDog(ctx context.Context, input model.DogInput) (*model.Dog, error) {
-	panic(fmt.Errorf("not implemented: CreateDog - createDog"))
+	db := database.DB
+
+	dog := database.DBDog{
+		Name: input.Name,
+	}
+
+	db.Create(&dog)
+
+	return &model.Dog{
+		ID:   dog.ID,
+		Name: dog.Name,
+	}, nil
 }
 
 // Dogs is the resolver for the dogs field.
 func (r *queryResolver) Dogs(ctx context.Context) ([]*model.Dog, error) {
-	panic(fmt.Errorf("not implemented: Dogs - dogs"))
+	db := database.DB
+
+	var dogs []database.DBDog
+	db.Find(&dogs)
+
+	var result []*model.Dog
+	for _, dog := range dogs {
+		result = append(result, &model.Dog{
+			ID:   dog.ID,
+			Name: dog.Name,
+		})
+	}
+
+	return result, nil
 }
 
 // Dog is the resolver for the dog field.
 func (r *queryResolver) Dog(ctx context.Context) (*model.Dog, error) {
-	panic(fmt.Errorf("not implemented: Dog - dog"))
+	db := database.DB
+
+	var dog database.DBDog
+
+	db.Where("id = ?", 1).First(&dog)
+
+	return &model.Dog{
+		ID:   dog.ID,
+		Name: dog.Name,
+	}, nil
+
 }
 
 // Mutation returns MutationResolver implementation.
