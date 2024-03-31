@@ -7,57 +7,23 @@ package graph
 import (
 	"context"
 
-	"github.com/morgansundqvist/service-dogtrain/database"
 	"github.com/morgansundqvist/service-dogtrain/graph/model"
+	"github.com/morgansundqvist/service-dogtrain/handlers"
 )
 
 // CreateDog is the resolver for the createDog field.
 func (r *mutationResolver) CreateDog(ctx context.Context, input model.DogInput) (*model.Dog, error) {
-	db := database.DB
-
-	dog := database.DBDog{
-		Name: input.Name,
-	}
-
-	db.Create(&dog)
-
-	return &model.Dog{
-		ID:   dog.ID,
-		Name: dog.Name,
-	}, nil
+	return handlers.CreateDog(ctx, input)
 }
 
 // Dogs is the resolver for the dogs field.
 func (r *queryResolver) Dogs(ctx context.Context) ([]*model.Dog, error) {
-	db := database.DB
-
-	var dogs []database.DBDog
-	db.Find(&dogs)
-
-	var result []*model.Dog
-	for _, dog := range dogs {
-		result = append(result, &model.Dog{
-			ID:   dog.ID,
-			Name: dog.Name,
-		})
-	}
-
-	return result, nil
+	return handlers.GetDogs(ctx)
 }
 
 // Dog is the resolver for the dog field.
 func (r *queryResolver) Dog(ctx context.Context) (*model.Dog, error) {
-	db := database.DB
-
-	var dog database.DBDog
-
-	db.Where("id = ?", 1).First(&dog)
-
-	return &model.Dog{
-		ID:   dog.ID,
-		Name: dog.Name,
-	}, nil
-
+	return handlers.GetDog(ctx)
 }
 
 // Mutation returns MutationResolver implementation.
