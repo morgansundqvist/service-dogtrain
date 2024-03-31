@@ -39,6 +39,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Dog() DogResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
@@ -47,13 +48,25 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	CommandGoal struct {
+		BaseCommand      func(childComplexity int) int
+		DefinitionOfDone func(childComplexity int) int
+		Dog              func(childComplexity int) int
+		DogID            func(childComplexity int) int
+		Goal             func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Priority         func(childComplexity int) int
+	}
+
 	Dog struct {
-		ID   func(childComplexity int) int
-		Name func(childComplexity int) int
+		CommandGoals func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Name         func(childComplexity int) int
 	}
 
 	Mutation struct {
-		CreateDog func(childComplexity int, input model.DogInput) int
+		CreateCommandGoal func(childComplexity int, input model.CommandGoalInput) int
+		CreateDog         func(childComplexity int, input model.DogInput) int
 	}
 
 	Query struct {
@@ -62,8 +75,12 @@ type ComplexityRoot struct {
 	}
 }
 
+type DogResolver interface {
+	CommandGoals(ctx context.Context, obj *model.Dog) ([]*model.CommandGoal, error)
+}
 type MutationResolver interface {
 	CreateDog(ctx context.Context, input model.DogInput) (*model.Dog, error)
+	CreateCommandGoal(ctx context.Context, input model.CommandGoalInput) (*model.CommandGoal, error)
 }
 type QueryResolver interface {
 	Dogs(ctx context.Context) ([]*model.Dog, error)
@@ -89,6 +106,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "CommandGoal.baseCommand":
+		if e.complexity.CommandGoal.BaseCommand == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.BaseCommand(childComplexity), true
+
+	case "CommandGoal.definitionOfDone":
+		if e.complexity.CommandGoal.DefinitionOfDone == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.DefinitionOfDone(childComplexity), true
+
+	case "CommandGoal.dog":
+		if e.complexity.CommandGoal.Dog == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.Dog(childComplexity), true
+
+	case "CommandGoal.dogId":
+		if e.complexity.CommandGoal.DogID == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.DogID(childComplexity), true
+
+	case "CommandGoal.goal":
+		if e.complexity.CommandGoal.Goal == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.Goal(childComplexity), true
+
+	case "CommandGoal.id":
+		if e.complexity.CommandGoal.ID == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.ID(childComplexity), true
+
+	case "CommandGoal.priority":
+		if e.complexity.CommandGoal.Priority == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.Priority(childComplexity), true
+
+	case "Dog.commandGoals":
+		if e.complexity.Dog.CommandGoals == nil {
+			break
+		}
+
+		return e.complexity.Dog.CommandGoals(childComplexity), true
+
 	case "Dog.id":
 		if e.complexity.Dog.ID == nil {
 			break
@@ -102,6 +175,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Dog.Name(childComplexity), true
+
+	case "Mutation.createCommandGoal":
+		if e.complexity.Mutation.CreateCommandGoal == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createCommandGoal_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateCommandGoal(childComplexity, args["input"].(model.CommandGoalInput)), true
 
 	case "Mutation.createDog":
 		if e.complexity.Mutation.CreateDog == nil {
@@ -137,6 +222,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCommandGoalInput,
 		ec.unmarshalInputDogInput,
 	)
 	first := true
@@ -254,6 +340,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_createCommandGoal_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CommandGoalInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCommandGoalInput2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoalInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createDog_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -321,6 +422,322 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _CommandGoal_id(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommandGoal_dog(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_dog(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Dog, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Dog)
+	fc.Result = res
+	return ec.marshalNDog2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐDog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_dog(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Dog_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Dog_name(ctx, field)
+			case "commandGoals":
+				return ec.fieldContext_Dog_commandGoals(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommandGoal_dogId(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_dogId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DogID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_dogId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommandGoal_baseCommand(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_baseCommand(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BaseCommand, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_baseCommand(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommandGoal_goal(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_goal(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Goal, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_goal(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommandGoal_definitionOfDone(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_definitionOfDone(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefinitionOfDone, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_definitionOfDone(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CommandGoal_priority(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_priority(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Priority, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_priority(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Dog_id(ctx context.Context, field graphql.CollectedField, obj *model.Dog) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Dog_id(ctx, field)
@@ -410,6 +827,63 @@ func (ec *executionContext) fieldContext_Dog_name(ctx context.Context, field gra
 	return fc, nil
 }
 
+func (ec *executionContext) _Dog_commandGoals(ctx context.Context, field graphql.CollectedField, obj *model.Dog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dog_commandGoals(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dog().CommandGoals(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.CommandGoal)
+	fc.Result = res
+	return ec.marshalOCommandGoal2ᚕᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoalᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dog_commandGoals(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dog",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CommandGoal_id(ctx, field)
+			case "dog":
+				return ec.fieldContext_CommandGoal_dog(ctx, field)
+			case "dogId":
+				return ec.fieldContext_CommandGoal_dogId(ctx, field)
+			case "baseCommand":
+				return ec.fieldContext_CommandGoal_baseCommand(ctx, field)
+			case "goal":
+				return ec.fieldContext_CommandGoal_goal(ctx, field)
+			case "definitionOfDone":
+				return ec.fieldContext_CommandGoal_definitionOfDone(ctx, field)
+			case "priority":
+				return ec.fieldContext_CommandGoal_priority(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CommandGoal", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createDog(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createDog(ctx, field)
 	if err != nil {
@@ -453,6 +927,8 @@ func (ec *executionContext) fieldContext_Mutation_createDog(ctx context.Context,
 				return ec.fieldContext_Dog_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dog_name(ctx, field)
+			case "commandGoals":
+				return ec.fieldContext_Dog_commandGoals(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
 		},
@@ -465,6 +941,77 @@ func (ec *executionContext) fieldContext_Mutation_createDog(ctx context.Context,
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDog_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createCommandGoal(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createCommandGoal(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateCommandGoal(rctx, fc.Args["input"].(model.CommandGoalInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.CommandGoal)
+	fc.Result = res
+	return ec.marshalNCommandGoal2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoal(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createCommandGoal(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CommandGoal_id(ctx, field)
+			case "dog":
+				return ec.fieldContext_CommandGoal_dog(ctx, field)
+			case "dogId":
+				return ec.fieldContext_CommandGoal_dogId(ctx, field)
+			case "baseCommand":
+				return ec.fieldContext_CommandGoal_baseCommand(ctx, field)
+			case "goal":
+				return ec.fieldContext_CommandGoal_goal(ctx, field)
+			case "definitionOfDone":
+				return ec.fieldContext_CommandGoal_definitionOfDone(ctx, field)
+			case "priority":
+				return ec.fieldContext_CommandGoal_priority(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CommandGoal", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createCommandGoal_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -511,6 +1058,8 @@ func (ec *executionContext) fieldContext_Query_dogs(ctx context.Context, field g
 				return ec.fieldContext_Dog_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dog_name(ctx, field)
+			case "commandGoals":
+				return ec.fieldContext_Dog_commandGoals(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
 		},
@@ -561,6 +1110,8 @@ func (ec *executionContext) fieldContext_Query_dog(ctx context.Context, field gr
 				return ec.fieldContext_Dog_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dog_name(ctx, field)
+			case "commandGoals":
+				return ec.fieldContext_Dog_commandGoals(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
 		},
@@ -2470,6 +3021,61 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCommandGoalInput(ctx context.Context, obj interface{}) (model.CommandGoalInput, error) {
+	var it model.CommandGoalInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"dogId", "baseCommand", "goal", "definitionOfDone", "priority"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "dogId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dogId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DogID = data
+		case "baseCommand":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("baseCommand"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BaseCommand = data
+		case "goal":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("goal"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Goal = data
+		case "definitionOfDone":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("definitionOfDone"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DefinitionOfDone = data
+		case "priority":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Priority = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputDogInput(ctx context.Context, obj interface{}) (model.DogInput, error) {
 	var it model.DogInput
 	asMap := map[string]interface{}{}
@@ -2505,6 +3111,75 @@ func (ec *executionContext) unmarshalInputDogInput(ctx context.Context, obj inte
 
 // region    **************************** object.gotpl ****************************
 
+var commandGoalImplementors = []string{"CommandGoal"}
+
+func (ec *executionContext) _CommandGoal(ctx context.Context, sel ast.SelectionSet, obj *model.CommandGoal) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commandGoalImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CommandGoal")
+		case "id":
+			out.Values[i] = ec._CommandGoal_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dog":
+			out.Values[i] = ec._CommandGoal_dog(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dogId":
+			out.Values[i] = ec._CommandGoal_dogId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "baseCommand":
+			out.Values[i] = ec._CommandGoal_baseCommand(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "goal":
+			out.Values[i] = ec._CommandGoal_goal(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "definitionOfDone":
+			out.Values[i] = ec._CommandGoal_definitionOfDone(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "priority":
+			out.Values[i] = ec._CommandGoal_priority(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var dogImplementors = []string{"Dog"}
 
 func (ec *executionContext) _Dog(ctx context.Context, sel ast.SelectionSet, obj *model.Dog) graphql.Marshaler {
@@ -2519,13 +3194,46 @@ func (ec *executionContext) _Dog(ctx context.Context, sel ast.SelectionSet, obj 
 		case "id":
 			out.Values[i] = ec._Dog_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Dog_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "commandGoals":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dog_commandGoals(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2571,6 +3279,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createDog":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDog(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createCommandGoal":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createCommandGoal(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -3030,6 +3745,25 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCommandGoal2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoal(ctx context.Context, sel ast.SelectionSet, v model.CommandGoal) graphql.Marshaler {
+	return ec._CommandGoal(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCommandGoal2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoal(ctx context.Context, sel ast.SelectionSet, v *model.CommandGoal) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CommandGoal(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNCommandGoalInput2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoalInput(ctx context.Context, v interface{}) (model.CommandGoalInput, error) {
+	res, err := ec.unmarshalInputCommandGoalInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNDog2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐDog(ctx context.Context, sel ast.SelectionSet, v model.Dog) graphql.Marshaler {
 	return ec._Dog(ctx, sel, &v)
 }
@@ -3056,6 +3790,21 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface
 
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3356,6 +4105,53 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOCommandGoal2ᚕᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoalᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CommandGoal) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCommandGoal2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoal(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalODog2ᚕᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐDogᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Dog) graphql.Marshaler {

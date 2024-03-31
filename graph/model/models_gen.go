@@ -2,9 +2,28 @@
 
 package model
 
+type CommandGoal struct {
+	ID               string `json:"id"`
+	Dog              *Dog   `json:"dog"`
+	DogID            string `json:"dogId"`
+	BaseCommand      string `json:"baseCommand"`
+	Goal             string `json:"goal"`
+	DefinitionOfDone string `json:"definitionOfDone"`
+	Priority         int    `json:"priority"`
+}
+
+type CommandGoalInput struct {
+	DogID            string `json:"dogId"`
+	BaseCommand      string `json:"baseCommand"`
+	Goal             string `json:"goal"`
+	DefinitionOfDone string `json:"definitionOfDone"`
+	Priority         int    `json:"priority"`
+}
+
 type Dog struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID           string         `json:"id"`
+	Name         string         `json:"name"`
+	CommandGoals []*CommandGoal `json:"commandGoals,omitempty"`
 }
 
 type DogInput struct {

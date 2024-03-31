@@ -11,9 +11,19 @@ import (
 	"github.com/morgansundqvist/service-dogtrain/handlers"
 )
 
+// CommandGoals is the resolver for the commandGoals field.
+func (r *dogResolver) CommandGoals(ctx context.Context, obj *model.Dog) ([]*model.CommandGoal, error) {
+	return handlers.GetCommandGoalsByDogId(ctx, obj.ID)
+}
+
 // CreateDog is the resolver for the createDog field.
 func (r *mutationResolver) CreateDog(ctx context.Context, input model.DogInput) (*model.Dog, error) {
 	return handlers.CreateDog(ctx, input)
+}
+
+// CreateCommandGoal is the resolver for the createCommandGoal field.
+func (r *mutationResolver) CreateCommandGoal(ctx context.Context, input model.CommandGoalInput) (*model.CommandGoal, error) {
+	return handlers.CreateCommandGoal(ctx, input)
 }
 
 // Dogs is the resolver for the dogs field.
@@ -26,11 +36,15 @@ func (r *queryResolver) Dog(ctx context.Context) (*model.Dog, error) {
 	return handlers.GetDog(ctx)
 }
 
+// Dog returns DogResolver implementation.
+func (r *Resolver) Dog() DogResolver { return &dogResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type dogResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

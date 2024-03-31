@@ -5,14 +5,34 @@
 type Dog {
   id: ID!
   name: String!
+  commandGoals: [CommandGoal!]
 }
 
 input DogInput {
   name: String!
 }
 
+type CommandGoal {
+  id: ID!
+  dog: Dog!
+  dogId: ID!
+  baseCommand: String!
+  goal: String!
+  definitionOfDone: String!
+  priority: Int!
+}
+
+input CommandGoalInput {
+  dogId: ID!
+  baseCommand: String!
+  goal: String!
+  definitionOfDone: String!
+  priority: Int!
+}
+
 type Mutation {
   createDog(input: DogInput!): Dog!
+  createCommandGoal(input: CommandGoalInput!): CommandGoal!
 }
 
 type Query {

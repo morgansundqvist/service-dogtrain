@@ -20,7 +20,7 @@ func InitDB() {
 
 	// Migration to create tables for schema model
 	DB.AutoMigrate(&DBDog{})
-
+	DB.AutoMigrate(&DBCommandGoal{})
 }
 
 // Base contains common columns for all tables.
@@ -42,4 +42,14 @@ type DBDog struct {
 	Base
 
 	Name string `json:"name"`
+}
+
+type DBCommandGoal struct {
+	Base
+
+	DogId            string `json:"dog_id"`
+	BaseCommand      string `json:"base_command"`
+	Goal             string `json:"goal"`
+	DefinitionOfDone string `json:"definition_of_done"`
+	Priority         int    `json:"priority"`
 }
