@@ -11,7 +11,7 @@ import (
 	"github.com/morgansundqvist/service-dogtrain/graph"
 )
 
-const defaultPort = "8080"
+const defaultPort = "8081"
 
 func main() {
 	port := os.Getenv("PORT")

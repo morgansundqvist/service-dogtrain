@@ -53,7 +53,7 @@ func GetCommandGoalsByDogId(ctx context.Context, dogId string) ([]*model.Command
 		return nil, err
 	}
 
-	var modelCommandGoals []*model.CommandGoal
+	modelCommandGoals := []*model.CommandGoal{}
 
 	for _, commandGoal := range commandGoals {
 		modelCommandGoals = append(modelCommandGoals, DBCommandGoalToCommandGoal(*commandGoal))

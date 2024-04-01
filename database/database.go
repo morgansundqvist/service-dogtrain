@@ -21,6 +21,7 @@ func InitDB() {
 	// Migration to create tables for schema model
 	DB.AutoMigrate(&DBDog{})
 	DB.AutoMigrate(&DBCommandGoal{})
+	DB.AutoMigrate(&DBTrainingSession{})
 }
 
 // Base contains common columns for all tables.
