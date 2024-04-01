@@ -39,6 +39,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	CommandGoal() CommandGoalResolver
 	Dog() DogResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -56,31 +57,53 @@ type ComplexityRoot struct {
 		Goal             func(childComplexity int) int
 		ID               func(childComplexity int) int
 		Priority         func(childComplexity int) int
+		TrainingSessions func(childComplexity int) int
 	}
 
 	Dog struct {
-		CommandGoals func(childComplexity int) int
-		ID           func(childComplexity int) int
-		Name         func(childComplexity int) int
+		CommandGoals     func(childComplexity int) int
+		ID               func(childComplexity int) int
+		Name             func(childComplexity int) int
+		TrainingSessions func(childComplexity int) int
 	}
 
 	Mutation struct {
-		CreateCommandGoal func(childComplexity int, input model.CommandGoalInput) int
-		CreateDog         func(childComplexity int, input model.DogInput) int
+		CreateCommandGoal     func(childComplexity int, input model.CommandGoalInput) int
+		CreateDog             func(childComplexity int, input model.DogInput) int
+		CreateTrainingSession func(childComplexity int, input model.TrainingSessionInput) int
+		UpdateTrainingSession func(childComplexity int, id string, input model.TrainingSessionInput) int
 	}
 
 	Query struct {
 		Dog  func(childComplexity int) int
 		Dogs func(childComplexity int) int
 	}
+
+	TrainingSession struct {
+		CommandGoal   func(childComplexity int) int
+		CommandGoalID func(childComplexity int) int
+		Date          func(childComplexity int) int
+		Dog           func(childComplexity int) int
+		DogID         func(childComplexity int) int
+		Duration      func(childComplexity int) int
+		ID            func(childComplexity int) int
+		Note          func(childComplexity int) int
+		SuccessScale  func(childComplexity int) int
+	}
 }
 
+type CommandGoalResolver interface {
+	TrainingSessions(ctx context.Context, obj *model.CommandGoal) ([]*model.TrainingSession, error)
+}
 type DogResolver interface {
 	CommandGoals(ctx context.Context, obj *model.Dog) ([]*model.CommandGoal, error)
+	TrainingSessions(ctx context.Context, obj *model.Dog) ([]*model.TrainingSession, error)
 }
 type MutationResolver interface {
 	CreateDog(ctx context.Context, input model.DogInput) (*model.Dog, error)
 	CreateCommandGoal(ctx context.Context, input model.CommandGoalInput) (*model.CommandGoal, error)
+	CreateTrainingSession(ctx context.Context, input model.TrainingSessionInput) (*model.TrainingSession, error)
+	UpdateTrainingSession(ctx context.Context, id string, input model.TrainingSessionInput) (*model.TrainingSession, error)
 }
 type QueryResolver interface {
 	Dogs(ctx context.Context) ([]*model.Dog, error)
@@ -155,6 +178,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CommandGoal.Priority(childComplexity), true
 
+	case "CommandGoal.trainingSessions":
+		if e.complexity.CommandGoal.TrainingSessions == nil {
+			break
+		}
+
+		return e.complexity.CommandGoal.TrainingSessions(childComplexity), true
+
 	case "Dog.commandGoals":
 		if e.complexity.Dog.CommandGoals == nil {
 			break
@@ -175,6 +205,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Dog.Name(childComplexity), true
+
+	case "Dog.trainingSessions":
+		if e.complexity.Dog.TrainingSessions == nil {
+			break
+		}
+
+		return e.complexity.Dog.TrainingSessions(childComplexity), true
 
 	case "Mutation.createCommandGoal":
 		if e.complexity.Mutation.CreateCommandGoal == nil {
@@ -200,6 +237,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateDog(childComplexity, args["input"].(model.DogInput)), true
 
+	case "Mutation.createTrainingSession":
+		if e.complexity.Mutation.CreateTrainingSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTrainingSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTrainingSession(childComplexity, args["input"].(model.TrainingSessionInput)), true
+
+	case "Mutation.updateTrainingSession":
+		if e.complexity.Mutation.UpdateTrainingSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTrainingSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTrainingSession(childComplexity, args["id"].(string), args["input"].(model.TrainingSessionInput)), true
+
 	case "Query.dog":
 		if e.complexity.Query.Dog == nil {
 			break
@@ -214,6 +275,69 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Dogs(childComplexity), true
 
+	case "TrainingSession.commandGoal":
+		if e.complexity.TrainingSession.CommandGoal == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.CommandGoal(childComplexity), true
+
+	case "TrainingSession.commandGoalId":
+		if e.complexity.TrainingSession.CommandGoalID == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.CommandGoalID(childComplexity), true
+
+	case "TrainingSession.date":
+		if e.complexity.TrainingSession.Date == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.Date(childComplexity), true
+
+	case "TrainingSession.dog":
+		if e.complexity.TrainingSession.Dog == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.Dog(childComplexity), true
+
+	case "TrainingSession.dogId":
+		if e.complexity.TrainingSession.DogID == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.DogID(childComplexity), true
+
+	case "TrainingSession.duration":
+		if e.complexity.TrainingSession.Duration == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.Duration(childComplexity), true
+
+	case "TrainingSession.id":
+		if e.complexity.TrainingSession.ID == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.ID(childComplexity), true
+
+	case "TrainingSession.note":
+		if e.complexity.TrainingSession.Note == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.Note(childComplexity), true
+
+	case "TrainingSession.successScale":
+		if e.complexity.TrainingSession.SuccessScale == nil {
+			break
+		}
+
+		return e.complexity.TrainingSession.SuccessScale(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -224,6 +348,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCommandGoalInput,
 		ec.unmarshalInputDogInput,
+		ec.unmarshalInputTrainingSessionInput,
 	)
 	first := true
 
@@ -370,6 +495,45 @@ func (ec *executionContext) field_Mutation_createDog_args(ctx context.Context, r
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createTrainingSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.TrainingSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNTrainingSessionInput2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTrainingSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.TrainingSessionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNTrainingSessionInput2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSessionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -512,6 +676,8 @@ func (ec *executionContext) fieldContext_CommandGoal_dog(ctx context.Context, fi
 				return ec.fieldContext_Dog_name(ctx, field)
 			case "commandGoals":
 				return ec.fieldContext_Dog_commandGoals(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_Dog_trainingSessions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
 		},
@@ -739,6 +905,67 @@ func (ec *executionContext) fieldContext_CommandGoal_priority(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _CommandGoal_trainingSessions(ctx context.Context, field graphql.CollectedField, obj *model.CommandGoal) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CommandGoal_trainingSessions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.CommandGoal().TrainingSessions(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TrainingSession)
+	fc.Result = res
+	return ec.marshalOTrainingSession2ᚕᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSessionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CommandGoal_trainingSessions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CommandGoal",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TrainingSession_id(ctx, field)
+			case "dog":
+				return ec.fieldContext_TrainingSession_dog(ctx, field)
+			case "dogId":
+				return ec.fieldContext_TrainingSession_dogId(ctx, field)
+			case "commandGoal":
+				return ec.fieldContext_TrainingSession_commandGoal(ctx, field)
+			case "commandGoalId":
+				return ec.fieldContext_TrainingSession_commandGoalId(ctx, field)
+			case "date":
+				return ec.fieldContext_TrainingSession_date(ctx, field)
+			case "note":
+				return ec.fieldContext_TrainingSession_note(ctx, field)
+			case "duration":
+				return ec.fieldContext_TrainingSession_duration(ctx, field)
+			case "successScale":
+				return ec.fieldContext_TrainingSession_successScale(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TrainingSession", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Dog_id(ctx context.Context, field graphql.CollectedField, obj *model.Dog) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Dog_id(ctx, field)
 	if err != nil {
@@ -877,8 +1104,71 @@ func (ec *executionContext) fieldContext_Dog_commandGoals(ctx context.Context, f
 				return ec.fieldContext_CommandGoal_definitionOfDone(ctx, field)
 			case "priority":
 				return ec.fieldContext_CommandGoal_priority(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_CommandGoal_trainingSessions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type CommandGoal", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Dog_trainingSessions(ctx context.Context, field graphql.CollectedField, obj *model.Dog) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dog_trainingSessions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dog().TrainingSessions(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TrainingSession)
+	fc.Result = res
+	return ec.marshalOTrainingSession2ᚕᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSessionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dog_trainingSessions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dog",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TrainingSession_id(ctx, field)
+			case "dog":
+				return ec.fieldContext_TrainingSession_dog(ctx, field)
+			case "dogId":
+				return ec.fieldContext_TrainingSession_dogId(ctx, field)
+			case "commandGoal":
+				return ec.fieldContext_TrainingSession_commandGoal(ctx, field)
+			case "commandGoalId":
+				return ec.fieldContext_TrainingSession_commandGoalId(ctx, field)
+			case "date":
+				return ec.fieldContext_TrainingSession_date(ctx, field)
+			case "note":
+				return ec.fieldContext_TrainingSession_note(ctx, field)
+			case "duration":
+				return ec.fieldContext_TrainingSession_duration(ctx, field)
+			case "successScale":
+				return ec.fieldContext_TrainingSession_successScale(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TrainingSession", field.Name)
 		},
 	}
 	return fc, nil
@@ -929,6 +1219,8 @@ func (ec *executionContext) fieldContext_Mutation_createDog(ctx context.Context,
 				return ec.fieldContext_Dog_name(ctx, field)
 			case "commandGoals":
 				return ec.fieldContext_Dog_commandGoals(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_Dog_trainingSessions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
 		},
@@ -1000,6 +1292,8 @@ func (ec *executionContext) fieldContext_Mutation_createCommandGoal(ctx context.
 				return ec.fieldContext_CommandGoal_definitionOfDone(ctx, field)
 			case "priority":
 				return ec.fieldContext_CommandGoal_priority(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_CommandGoal_trainingSessions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type CommandGoal", field.Name)
 		},
@@ -1012,6 +1306,156 @@ func (ec *executionContext) fieldContext_Mutation_createCommandGoal(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createCommandGoal_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createTrainingSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createTrainingSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTrainingSession(rctx, fc.Args["input"].(model.TrainingSessionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.TrainingSession)
+	fc.Result = res
+	return ec.marshalNTrainingSession2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createTrainingSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TrainingSession_id(ctx, field)
+			case "dog":
+				return ec.fieldContext_TrainingSession_dog(ctx, field)
+			case "dogId":
+				return ec.fieldContext_TrainingSession_dogId(ctx, field)
+			case "commandGoal":
+				return ec.fieldContext_TrainingSession_commandGoal(ctx, field)
+			case "commandGoalId":
+				return ec.fieldContext_TrainingSession_commandGoalId(ctx, field)
+			case "date":
+				return ec.fieldContext_TrainingSession_date(ctx, field)
+			case "note":
+				return ec.fieldContext_TrainingSession_note(ctx, field)
+			case "duration":
+				return ec.fieldContext_TrainingSession_duration(ctx, field)
+			case "successScale":
+				return ec.fieldContext_TrainingSession_successScale(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TrainingSession", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createTrainingSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateTrainingSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateTrainingSession(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTrainingSession(rctx, fc.Args["id"].(string), fc.Args["input"].(model.TrainingSessionInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.TrainingSession)
+	fc.Result = res
+	return ec.marshalNTrainingSession2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSession(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateTrainingSession(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TrainingSession_id(ctx, field)
+			case "dog":
+				return ec.fieldContext_TrainingSession_dog(ctx, field)
+			case "dogId":
+				return ec.fieldContext_TrainingSession_dogId(ctx, field)
+			case "commandGoal":
+				return ec.fieldContext_TrainingSession_commandGoal(ctx, field)
+			case "commandGoalId":
+				return ec.fieldContext_TrainingSession_commandGoalId(ctx, field)
+			case "date":
+				return ec.fieldContext_TrainingSession_date(ctx, field)
+			case "note":
+				return ec.fieldContext_TrainingSession_note(ctx, field)
+			case "duration":
+				return ec.fieldContext_TrainingSession_duration(ctx, field)
+			case "successScale":
+				return ec.fieldContext_TrainingSession_successScale(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TrainingSession", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateTrainingSession_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1060,6 +1504,8 @@ func (ec *executionContext) fieldContext_Query_dogs(ctx context.Context, field g
 				return ec.fieldContext_Dog_name(ctx, field)
 			case "commandGoals":
 				return ec.fieldContext_Dog_commandGoals(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_Dog_trainingSessions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
 		},
@@ -1112,6 +1558,8 @@ func (ec *executionContext) fieldContext_Query_dog(ctx context.Context, field gr
 				return ec.fieldContext_Dog_name(ctx, field)
 			case "commandGoals":
 				return ec.fieldContext_Dog_commandGoals(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_Dog_trainingSessions(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
 		},
@@ -1243,6 +1691,430 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_id(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_dog(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_dog(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Dog, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Dog)
+	fc.Result = res
+	return ec.marshalNDog2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐDog(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_dog(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Dog_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Dog_name(ctx, field)
+			case "commandGoals":
+				return ec.fieldContext_Dog_commandGoals(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_Dog_trainingSessions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Dog", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_dogId(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_dogId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DogID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_dogId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_commandGoal(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_commandGoal(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommandGoal, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.CommandGoal)
+	fc.Result = res
+	return ec.marshalNCommandGoal2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐCommandGoal(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_commandGoal(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_CommandGoal_id(ctx, field)
+			case "dog":
+				return ec.fieldContext_CommandGoal_dog(ctx, field)
+			case "dogId":
+				return ec.fieldContext_CommandGoal_dogId(ctx, field)
+			case "baseCommand":
+				return ec.fieldContext_CommandGoal_baseCommand(ctx, field)
+			case "goal":
+				return ec.fieldContext_CommandGoal_goal(ctx, field)
+			case "definitionOfDone":
+				return ec.fieldContext_CommandGoal_definitionOfDone(ctx, field)
+			case "priority":
+				return ec.fieldContext_CommandGoal_priority(ctx, field)
+			case "trainingSessions":
+				return ec.fieldContext_CommandGoal_trainingSessions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CommandGoal", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_commandGoalId(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_commandGoalId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommandGoalID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_commandGoalId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_date(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_note(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_note(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Note, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_note(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_duration(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_duration(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_duration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrainingSession_successScale(ctx context.Context, field graphql.CollectedField, obj *model.TrainingSession) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrainingSession_successScale(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SuccessScale, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrainingSession_successScale(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrainingSession",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3103,6 +3975,68 @@ func (ec *executionContext) unmarshalInputDogInput(ctx context.Context, obj inte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTrainingSessionInput(ctx context.Context, obj interface{}) (model.TrainingSessionInput, error) {
+	var it model.TrainingSessionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"dogId", "commandGoalId", "date", "note", "duration", "successScale"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "dogId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dogId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DogID = data
+		case "commandGoalId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("commandGoalId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CommandGoalID = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
+		case "note":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("note"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Note = data
+		case "duration":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Duration = data
+		case "successScale":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("successScale"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SuccessScale = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3125,38 +4059,71 @@ func (ec *executionContext) _CommandGoal(ctx context.Context, sel ast.SelectionS
 		case "id":
 			out.Values[i] = ec._CommandGoal_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "dog":
 			out.Values[i] = ec._CommandGoal_dog(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "dogId":
 			out.Values[i] = ec._CommandGoal_dogId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "baseCommand":
 			out.Values[i] = ec._CommandGoal_baseCommand(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "goal":
 			out.Values[i] = ec._CommandGoal_goal(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "definitionOfDone":
 			out.Values[i] = ec._CommandGoal_definitionOfDone(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "priority":
 			out.Values[i] = ec._CommandGoal_priority(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				out.Invalids++
+				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "trainingSessions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._CommandGoal_trainingSessions(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3234,6 +4201,39 @@ func (ec *executionContext) _Dog(ctx context.Context, sel ast.SelectionSet, obj 
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "trainingSessions":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dog_trainingSessions(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3286,6 +4286,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createCommandGoal":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createCommandGoal(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "createTrainingSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTrainingSession(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateTrainingSession":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateTrainingSession(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -3381,6 +4395,85 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var trainingSessionImplementors = []string{"TrainingSession"}
+
+func (ec *executionContext) _TrainingSession(ctx context.Context, sel ast.SelectionSet, obj *model.TrainingSession) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, trainingSessionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TrainingSession")
+		case "id":
+			out.Values[i] = ec._TrainingSession_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dog":
+			out.Values[i] = ec._TrainingSession_dog(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dogId":
+			out.Values[i] = ec._TrainingSession_dogId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "commandGoal":
+			out.Values[i] = ec._TrainingSession_commandGoal(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "commandGoalId":
+			out.Values[i] = ec._TrainingSession_commandGoalId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "date":
+			out.Values[i] = ec._TrainingSession_date(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "note":
+			out.Values[i] = ec._TrainingSession_note(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "duration":
+			out.Values[i] = ec._TrainingSession_duration(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "successScale":
+			out.Values[i] = ec._TrainingSession_successScale(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3828,6 +4921,25 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
+func (ec *executionContext) marshalNTrainingSession2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSession(ctx context.Context, sel ast.SelectionSet, v model.TrainingSession) graphql.Marshaler {
+	return ec._TrainingSession(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTrainingSession2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSession(ctx context.Context, sel ast.SelectionSet, v *model.TrainingSession) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TrainingSession(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNTrainingSessionInput2githubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSessionInput(ctx context.Context, v interface{}) (model.TrainingSessionInput, error) {
+	res, err := ec.unmarshalInputTrainingSessionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -4215,6 +5327,53 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOTrainingSession2ᚕᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSessionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TrainingSession) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTrainingSession2ᚖgithubᚗcomᚋmorgansundqvistᚋserviceᚑdogtrainᚋgraphᚋmodelᚐTrainingSession(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

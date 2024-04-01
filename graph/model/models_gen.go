@@ -3,13 +3,14 @@
 package model
 
 type CommandGoal struct {
-	ID               string `json:"id"`
-	Dog              *Dog   `json:"dog"`
-	DogID            string `json:"dogId"`
-	BaseCommand      string `json:"baseCommand"`
-	Goal             string `json:"goal"`
-	DefinitionOfDone string `json:"definitionOfDone"`
-	Priority         int    `json:"priority"`
+	ID               string             `json:"id"`
+	Dog              *Dog               `json:"dog"`
+	DogID            string             `json:"dogId"`
+	BaseCommand      string             `json:"baseCommand"`
+	Goal             string             `json:"goal"`
+	DefinitionOfDone string             `json:"definitionOfDone"`
+	Priority         int                `json:"priority"`
+	TrainingSessions []*TrainingSession `json:"trainingSessions,omitempty"`
 }
 
 type CommandGoalInput struct {
@@ -21,9 +22,10 @@ type CommandGoalInput struct {
 }
 
 type Dog struct {
-	ID           string         `json:"id"`
-	Name         string         `json:"name"`
-	CommandGoals []*CommandGoal `json:"commandGoals,omitempty"`
+	ID               string             `json:"id"`
+	Name             string             `json:"name"`
+	CommandGoals     []*CommandGoal     `json:"commandGoals,omitempty"`
+	TrainingSessions []*TrainingSession `json:"trainingSessions,omitempty"`
 }
 
 type DogInput struct {
@@ -34,4 +36,25 @@ type Mutation struct {
 }
 
 type Query struct {
+}
+
+type TrainingSession struct {
+	ID            string       `json:"id"`
+	Dog           *Dog         `json:"dog"`
+	DogID         string       `json:"dogId"`
+	CommandGoal   *CommandGoal `json:"commandGoal"`
+	CommandGoalID string       `json:"commandGoalId"`
+	Date          string       `json:"date"`
+	Note          string       `json:"note"`
+	Duration      int          `json:"duration"`
+	SuccessScale  int          `json:"successScale"`
+}
+
+type TrainingSessionInput struct {
+	DogID         string `json:"dogId"`
+	CommandGoalID string `json:"commandGoalId"`
+	Date          string `json:"date"`
+	Note          string `json:"note"`
+	Duration      int    `json:"duration"`
+	SuccessScale  int    `json:"successScale"`
 }

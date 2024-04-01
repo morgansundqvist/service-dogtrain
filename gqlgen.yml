@@ -89,3 +89,9 @@ models:
     fields:
       commandGoals:
         resolver: true
+      trainingSessions:
+        resolver: true
+  CommandGoal:
+    fields:
+      trainingSessions:
+        resolver: true

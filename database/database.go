@@ -53,3 +53,14 @@ type DBCommandGoal struct {
 	DefinitionOfDone string `json:"definition_of_done"`
 	Priority         int    `json:"priority"`
 }
+
+type DBTrainingSession struct {
+	Base
+
+	DogId         string    `json:"dog_id"`
+	CommandGoalId string    `json:"command_goal_id"`
+	Date          time.Time `json:"date"`
+	Note          string    `json:"note"`
+	Duration      int       `json:"duration"`
+	SuccessScale  int       `json:"success_scale"`
+}

@@ -6,6 +6,7 @@ type Dog {
   id: ID!
   name: String!
   commandGoals: [CommandGoal!]
+  trainingSessions: [TrainingSession!]
 }
 
 input DogInput {
@@ -20,6 +21,7 @@ type CommandGoal {
   goal: String!
   definitionOfDone: String!
   priority: Int!
+  trainingSessions: [TrainingSession!]
 }
 
 input CommandGoalInput {
@@ -30,9 +32,32 @@ input CommandGoalInput {
   priority: Int!
 }
 
+type TrainingSession {
+  id: ID!
+  dog: Dog!
+  dogId: ID!
+  commandGoal: CommandGoal!
+  commandGoalId: ID!
+  date: String!
+  note: String!
+  duration: Int!
+  successScale: Int!
+}
+
+input TrainingSessionInput {
+  dogId: ID!
+  commandGoalId: ID!
+  date: String!
+  note: String!
+  duration: Int!
+  successScale: Int!
+}
+
 type Mutation {
   createDog(input: DogInput!): Dog!
   createCommandGoal(input: CommandGoalInput!): CommandGoal!
+  createTrainingSession(input: TrainingSessionInput!): TrainingSession!
+  updateTrainingSession(id: ID!, input: TrainingSessionInput!): TrainingSession!
 }
 
 type Query {

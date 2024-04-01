@@ -11,9 +11,19 @@ import (
 	"github.com/morgansundqvist/service-dogtrain/handlers"
 )
 
+// TrainingSessions is the resolver for the trainingSessions field.
+func (r *commandGoalResolver) TrainingSessions(ctx context.Context, obj *model.CommandGoal) ([]*model.TrainingSession, error) {
+	return handlers.GetTrainingSessionsByCommandGoalId(ctx, obj.ID)
+}
+
 // CommandGoals is the resolver for the commandGoals field.
 func (r *dogResolver) CommandGoals(ctx context.Context, obj *model.Dog) ([]*model.CommandGoal, error) {
 	return handlers.GetCommandGoalsByDogId(ctx, obj.ID)
+}
+
+// TrainingSessions is the resolver for the trainingSessions field.
+func (r *dogResolver) TrainingSessions(ctx context.Context, obj *model.Dog) ([]*model.TrainingSession, error) {
+	return handlers.GetTrainingSessionsByDogId(ctx, obj.ID)
 }
 
 // CreateDog is the resolver for the createDog field.
@@ -26,6 +36,16 @@ func (r *mutationResolver) CreateCommandGoal(ctx context.Context, input model.Co
 	return handlers.CreateCommandGoal(ctx, input)
 }
 
+// CreateTrainingSession is the resolver for the createTrainingSession field.
+func (r *mutationResolver) CreateTrainingSession(ctx context.Context, input model.TrainingSessionInput) (*model.TrainingSession, error) {
+	return handlers.CreateTrainingSession(ctx, input)
+}
+
+// UpdateTrainingSession is the resolver for the updateTrainingSession field.
+func (r *mutationResolver) UpdateTrainingSession(ctx context.Context, id string, input model.TrainingSessionInput) (*model.TrainingSession, error) {
+	return handlers.UpdateTrainingSession(ctx, id, input)
+}
+
 // Dogs is the resolver for the dogs field.
 func (r *queryResolver) Dogs(ctx context.Context) ([]*model.Dog, error) {
 	return handlers.GetDogs(ctx)
@@ -36,6 +56,9 @@ func (r *queryResolver) Dog(ctx context.Context) (*model.Dog, error) {
 	return handlers.GetDog(ctx)
 }
 
+// CommandGoal returns CommandGoalResolver implementation.
+func (r *Resolver) CommandGoal() CommandGoalResolver { return &commandGoalResolver{r} }
+
 // Dog returns DogResolver implementation.
 func (r *Resolver) Dog() DogResolver { return &dogResolver{r} }
 
@@ -45,6 +68,7 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type commandGoalResolver struct{ *Resolver }
 type dogResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
